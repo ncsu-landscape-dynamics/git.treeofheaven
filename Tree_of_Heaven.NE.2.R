@@ -48,9 +48,7 @@ getVars <- function(res){
 envi.30 <- getVars(res=30)
 envi.1k <- getVars(res=1000)
 
-
-#toh.PDA <- readOGR('H:\\Shared drives\\APHIS  Projects\\PoPS\\Case Studies\\spotted_latternfly\\raw_data\\2019_AllStates_Visual_SurveyDownload_11_04_2019.shp')
-toh.PDA <- readOGR('C:\\Users\\bjselige\\Downloads\\2019_AllStates_Visual_SurveyDownload_11_04_2019.shp')
+toh.PDA <- readOGR('H:\\Shared drives\\APHIS  Projects\\PoPS\\Case Studies\\spotted_latternfly\\raw_data\\2019_AllStates_Visual_SurveyDownload_11_04_2019.shp')
 toh.PDA <- toh.PDA[which(toh.PDA$HostStatus=='Ailanthus altissima'), 0]
 toh.PDA <- spTransform(toh.PDA, crs(usa))
 toh.PDA <- data.frame(toh.PDA@coords); colnames(toh.PDA) <- c('Longitude', 'Latitude')
@@ -87,7 +85,6 @@ backg.set1 <- spsample(borders, type='regular', n=length(test.set1))
 backg.set2 <- spsample(borders, type='regular', n=length(test.set2))
 backg.set3 <- spsample(borders, type='regular', n=length(test.set3))
 
-
 # raxy <- rasterize(x=toh.all, y=aggregate(biovars[[1]], 5), fun='count', background=0)
 # raxy <- raxy*aggregate(biovars[[1]]*0+1, 5)
 
@@ -100,12 +97,6 @@ pts.set1 <- SpatialPointsDataFrame(coords=coordinates(rtp.set1),
                                                    'RNR'=extract(x=envi.1k$RNR, y=rtp.set1),
                                                    'POP'=extract(x=envi.1k$POP, y=rtp.set1)))
 
-
-
-
-
-
-
 # mgam <- gam(formula=X~MAT+CAN+RNR+POP, data=pts.all@data)
 # pgam <- predict(envi.1k, mgam, type='response')
 # pgam2 <- prediction(predictions=extract(pgam, all.p), labels = as.numeric(all.p$layer>0))
@@ -114,9 +105,8 @@ pts.set1 <- SpatialPointsDataFrame(coords=coordinates(rtp.set1),
 m1.gam <- gam(formula=X~MAT+CAN+RNR+POP, data=train.set1@data)
 p1.gam <- predict(envi.1k, m1.gam, type='response')
 
-
 p1.gam2 <- prediction(predictions=extract(p1.gam, pts.set1)[!is.na(extract(p1.gam, pts.set1))],
-                       labels=as.numeric(pts.set1$X>0)[!is.na(extract(p1.gam, pts.set1))])
+                      labels=as.numeric(pts.set1$X>0)[!is.na(extract(p1.gam, pts.set1))])
 e1.gam <- performance(p1.gam2, "auc")
 
 m2.gam <- gam(formula=X~MAT+CAN+RNR+POP, data=pts.set2@data)
@@ -124,7 +114,6 @@ p2.gam <- predict(envi.1k, m2.gam, type='response')
 
 m3.gam <- gam(formula=X~MAT+CAN+RNR+POP, data=pts.set3@data)
 p3.gam <- predict(envi.1k, m3.gam, type='response')
-
 
 m1.rf <- randomForest(formula=X~MAT+CAN+RNR+POP, data=pts.set1, na.action = na.omit)
 p1.rf <- predict(envi.1k, rf)
@@ -140,7 +129,6 @@ plm <- predict(envi.1k, mlm, type='response')
 # bw1 <- gwr.sel(formula=Z~MAT, data=raxy.pts)
 # m1 <- gwr(formula=Z~MAT, data=raxy.pts, bandwidth = bw1, predictions=T)
 # a <- rasterize(m1$SDF, raxy)
-# 
 # bw2 <- bw.gwr(Z~MAT, data=raxy.pts)
 # m2 <- gwr.basic(Z~MAT, data=raxy.pts, bw=bw2)
 
