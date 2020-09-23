@@ -66,9 +66,7 @@ toh.pts <- SpatialPointsDataFrame(coords=toh.rtp@coords,
                                                   'POP'=extract(x=envi.1k$POP, y=toh.rtp)))
 
 k <- 5; set.seed(1991); folds <- kfold(toh.pts, k=k)
-
-test <- toh.pts[which(folds==k),]
-train <- toh.pts[which(folds!=k),]
+test <- toh.pts[which(folds==k),]; train <- toh.pts[which(folds!=k),]
 backg <- spsample(borders, type='regular', n=length(test))
 
 ##### Model #####
