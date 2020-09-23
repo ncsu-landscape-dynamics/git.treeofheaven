@@ -53,10 +53,10 @@ toh.EDD <- read.csv('H:\\Shared drives\\Data\\Table\\USA\\Ailanthus.eddmaps.csv'
 toh.EDD <- toh.EDD[-which(is.na(toh.EDD$Longitude)),]
 toh.EDD <- toh.EDD[which(toh.EDD$OccStatus=="Positive"), c('Longitude', 'Latitude')]
 toh.FIA <- read.csv('H:\\Shared drives\\Data\\Table\\Regional\\toh.fiaNE.csv')[,c(2,3)]; colnames(toh.FIA) <- c('Longitude', 'Latitude')
-toh.all <- SpatialPoints(unique(rbind(toh.PDA, toh.BIEN, toh.EDD, toh.FIA)), CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'))
-toh.all <- crop(toh.all, borders)
+toh.xy <- SpatialPoints(unique(rbind(toh.PDA, toh.BIEN, toh.EDD, toh.FIA)), CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'))
+toh.xy <- crop(toh.xy, borders)
 
-toh.ras <- rasterize(x=toh.all, y=envi.1k$CAN, fun='count', background=NA)
+toh.ras <- rasterize(x=toh.xy, y=envi.1k$CAN, fun='count', background=NA)
 toh.rtp <- rasterToPoints(toh.ras, spatial=T)
 toh.pts <- SpatialPointsDataFrame(coords=toh.rtp@coords,
                                   data=data.frame('X'=toh.rtp$layer, 
