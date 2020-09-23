@@ -27,10 +27,8 @@ rails.d <- resample(rails.d, biovars[[1]], method='bilinear'); rails.d <- rails.
 roads.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\roads.distance.tif')
 roads.d <- resample(roads.d, biovars[[1]], method='bilinear')
 
-set.seed(1991)
-folds <- kfold(toh.xy, k=5)
-train <-  toh.xy[folds!=5,]
-test <- toh.xy[folds==5,]
+set.seed(1991); folds <- kfold(toh.xy, k=5)
+train <-  toh.xy[folds!=5,]; test <- toh.xy[folds==5,]
 backg <- spsample(usa, n=length(test), type='regular')
 backg.xy <- coordinates(backg); colnames(backg.xy) <- c('Longitude', 'Latitude')
  
@@ -38,7 +36,7 @@ m.all <- maxent(p=train, x=biovars)
 m.top3.ro <- maxent(p=train, x=stack(biovars[[1]], biovars[[14]], biovars[[19]], roads.d))
 pm.top3.ro <- predict(m.top3.ro, x=stack(biovars[[1]], biovars[[14]], biovars[[19]], roads.d))
 
-slf <- raster('C:\\Users\\bjselige\\Downloads\\slf2019_infested.tif')
+slf <- raster('H:\\Shared drives\\APHIS  Projects\\PoPS\\Case Studies\\spotted_latternfly\\slf_data_redone_with_all_data_sources\\slf2019_infested.tif')
 slf <- projectRaster(slf, crs=CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0 '))
 
 hist(pm.top3.ro[slf$slf2019_infested>0])
@@ -49,9 +47,10 @@ final.out[which(values(final.out)<.2)] <- 0
 final.out <- rescale(final.out)
 final.out <- final.out*100
 
-writeRaster(final.out, 'C:\\Users\\bjselige\\Desktop\\toh.USA.tif', overwrite=T)
-toh.usa <- raster('C:\\Users\\bjselige\\Desktop\\toh.USA.tif')
-toh.usa <- aggregate(toh.usa, 4)
+
+# writeRaster(final.out, 'C:\\Users\\bjselige\\Desktop\\toh.USA.tif', overwrite=T)
+# toh.usa <- raster('C:\\Users\\bjselige\\Desktop\\toh.USA.tif'); toh.usa <- aggregate(toh.usa, 4)
+
 
 ### This block of code includes models which were tried but were not optimal
 # m.rora <- maxent(p=train, x=stack(roads.d, rails.d))
