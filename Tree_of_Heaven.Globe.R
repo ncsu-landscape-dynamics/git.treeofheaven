@@ -3,26 +3,30 @@ require(mapproj)
 require(rgdal)
 require(kuenm)
 require(dismo)
+require(rgbif)
 
-#a <- read.csv('C:\\Users\\bjselige\\Downloads\\0007724-200613084148143\\0007724-200613084148143.csv')
-a <- read.delim('C:\\Users\\bjselige\\Downloads\\0007735-200613084148143\\occurrence.txt', stringsAsFactors = F)
-a <- occ_data(scientificName = 'Ailanthus altissima')
+
+# aa.gbif <- occ_data(scientificName = 'Ailanthus altissima', limit=99999)
+# aa.gbif <- na.omit(data.frame(aa.gbif$data$decimalLongitude, aa.gbif$data$decimalLatitude))
+# write.csv(aa.gbif, 'C:\\Users\\bjselige\\Desktop\\Ailanthus.GBIF.csv')
+aa.gbif <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.GBIF.csv')
+aa.gbif <- SpatialPoints(coords = aa.gbif)
+aa.bien <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.BIEN.csv')[, c('Longitude', 'Latitude')]
+aa.bien <- SpatialPoints(coords = aa.bien)
 
 #b <- SpatialPoints(coords = na.omit(data.frame(a$data$decimalLongitude, a$data$decimalLatitude)))
-b <- SpatialPoints(coords = na.omit(data.frame(a$decimalLongitude, a$decimalLatitude)))
+
 b0 <- kfold(b, 5)
 b1 <- b0[which(b0!=5)]
 b2 <- b0[which(b0==5)]
 
-write.csv(b, 'C:\\Users\\bjselige\\Documents\\Tree_of_Heaven\\ku_sdm\\A_altissima\\Sp_joint.csv')
-write.csv(b1, 'C:\\Users\\bjselige\\Documents\\Tree_of_Heaven\\ku_sdm\\A_altissima\\Sp_train.csv')
-write.csv(b2, 'C:\\Users\\bjselige\\Documents\\Tree_of_Heaven\\ku_sdm\\A_altissima\\Sp_test.csv')
+# write.csv(b, 'C:\\Users\\bjselige\\Documents\\Tree_of_Heaven\\ku_sdm\\A_altissima\\Sp_joint.csv')
+# write.csv(b1, 'C:\\Users\\bjselige\\Documents\\Tree_of_Heaven\\ku_sdm\\A_altissima\\Sp_train.csv')
+# write.csv(b2, 'C:\\Users\\bjselige\\Documents\\Tree_of_Heaven\\ku_sdm\\A_altissima\\Sp_test.csv')
 
 
 d <- getData('worldclim', download=T, var='bio', res=5)
-
 e <- stack(d[[1]], d[[11]], d[[12]], d[[19]])
-
 c <- maxent(p=b, x=d)
 #c2 <- maxent(p=b, x=e)
 p <- predict(c, x=d)
