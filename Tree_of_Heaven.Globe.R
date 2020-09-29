@@ -9,8 +9,7 @@ require(rgbif)
 aa.gbif <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.GBIF.csv')[, c(2,3)]; names(aa.gbif) <- c('Longitude', 'Latitude')
 aa.bien <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.BIEN.csv')[, c('Longitude', 'Latitude')]
 pts <- SpatialPoints(coords = unique(rbind(aa.gbif, aa.bien)))
-d <- getData('worldclim', download=T, var='bio', res=5)
-e <- stack(d[[1]], d[[11]], d[[12]], d[[19]])
+d <- getData('worldclim', download=T, var='bio', res=5) #e <- stack(d[[1]], d[[11]], d[[12]], d[[19]])
 
 #### Split data into testing and training sets ####
 k <- 5; set.seed(1991)
@@ -34,10 +33,5 @@ ggcp <- ggplot() + geom_raster(data=rdf, aes(x=x, y=y), fill='grey80') +
   geom_point(data=data.frame(coordinates(pts)), aes(x=Longitude, y=Latitude), col='red', cex=1.5, stroke=1) + 
   coord_equal() + theme_void() + theme(legend.position='none')
 
-png('C:\\Users\\bjselige\\Desktop\\toh.global.png', width=1920, height=1080)
-ggc
-dev.off()
-
-png('C:\\Users\\bjselige\\Desktop\\toh.global_points.png', width=1920, height=1080)
-ggcp
-dev.off()
+png(width=1920, height=1080) ;ggc; dev.off()
+png(width=1920, height=1080); ggcp; dev.off()

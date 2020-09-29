@@ -10,6 +10,7 @@ require(ENMeval)
 require(sdmvspecies)
 options(java.parameters = "-Xmx8000m")
 
+##### Gather and prep data #####
 usa <- readOGR('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\usa_boundaries\\us_lower_48_states.shp')
 usa <- spTransform(usa, CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'))
 
@@ -27,32 +28,33 @@ rails.d <- resample(rails.d, biovars[[1]], method='bilinear'); rails.d <- rails.
 roads.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\roads.distance.tif')
 roads.d <- resample(roads.d, biovars[[1]], method='bilinear')
 
-set.seed(1991); folds <- kfold(toh.xy, k=5)
-train <-  toh.xy[folds!=5,]; test <- toh.xy[folds==5,]
+#### Split data into testing and training sets ####
+k <- 5; set.seed(1991); folds <- kfold(toh.xy, k=k)
+train <-  toh.xy[folds!=k,]; test <- toh.xy[folds==k,]
 backg <- spsample(usa, n=length(test), type='regular')
 backg.xy <- coordinates(backg); colnames(backg.xy) <- c('Longitude', 'Latitude')
- 
+
+#### Model and predict ####
 m.all <- maxent(p=train, x=biovars)
 m.top3.ro <- maxent(p=train, x=stack(biovars[[1]], biovars[[14]], biovars[[19]], roads.d))
 pm.top3.ro <- predict(m.top3.ro, x=stack(biovars[[1]], biovars[[14]], biovars[[19]], roads.d))
 
+#### Evaluation ####
 slf <- raster('H:\\Shared drives\\APHIS  Projects\\PoPS\\Case Studies\\spotted_latternfly\\slf_data_redone_with_all_data_sources\\slf2019_infested.tif')
 slf <- projectRaster(slf, crs=CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0 '))
 
-hist(pm.top3.ro[slf$slf2019_infested>0])
-sum(pm.top3.ro[slf$slf2019_infested>0]<.2, na.rm=T)/sum(pm.top3.ro[slf$slf2019_infested>0]>0, na.rm=T)
+slf.hist <- hist(pm.top3.ro[slf$slf2019_infested>0])
+per.out <- sum(pm.top3.ro[slf$slf2019_infested>0]<.2, na.rm=T)/sum(pm.top3.ro[slf$slf2019_infested>0]>0, na.rm=T)
 
+#### Post-processing prediction ####
 final.out <- pm.top3.ro
 final.out[which(values(final.out)<.2)] <- 0
 final.out <- rescale(final.out)
 final.out <- final.out*100
-
-
 # writeRaster(final.out, 'C:\\Users\\bjselige\\Desktop\\toh.USA.tif', overwrite=T)
 # toh.usa <- raster('C:\\Users\\bjselige\\Desktop\\toh.USA.tif'); toh.usa <- aggregate(toh.usa, 4)
 
-
-### This block of code includes models which were tried but were not optimal
+#### This block of code includes models which were tried but abandoned ####
 # m.rora <- maxent(p=train, x=stack(roads.d, rails.d))
 # m.all.ro <- maxent(p=train, x=stack(biovars, roads.d))
 # m.all.rora <- maxent(p=train, x=stack(biovars, roads.d, rails.d))

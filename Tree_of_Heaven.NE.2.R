@@ -13,7 +13,7 @@ require(gbm)
 require(mgcv)
 require(ROCR)
 
-##### Prep #####
+##### Gather and prep data #####
 usa <- readOGR('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\usa_boundaries\\us_lower_48_states.shp')
 usa <- spTransform(usa, CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'))
 borders <- usa[usa$STATE_NAME%in%c('District of Columbia', 'Delaware', 'New Jersey', 'Maryland', 
@@ -73,9 +73,9 @@ backg <- spsample(borders, type='regular', n=length(test))
 m1.gam <- gam(formula=X~MAT+CAN+RNR+POP, data=train@data)
 p1.gam <- predict(envi.1k, m1.gam, type='response')
 
-# p1.gam2 <- prediction(predictions=extract(p1.gam, toh.pts)[!is.na(extract(p1.gam, toh.pts))],
-#                       labels=as.numeric(toh.pts$X>0)[!is.na(extract(p1.gam, toh.pts))])
-# e1.gam <- performance(p1.gam2, "auc")
+p1.gam2 <- prediction(predictions=extract(p1.gam, toh.pts)[!is.na(extract(p1.gam, toh.pts))],
+                      labels=as.numeric(toh.pts$X>0)[!is.na(extract(p1.gam, toh.pts))])
+e1.gam <- performance(p1.gam2, "auc")
 
 m1.rf <- randomForest(formula=X~MAT+CAN+RNR+POP, data=train, na.action = na.omit)
 p1.rf <- predict(envi.1k, m1.rf)
@@ -85,11 +85,11 @@ mglm <- glm(formula=X~MAT+CAN+RNR+POP, data=train@data)
 pglm <- predict(envi.1k, mglm, type='response')
 eglm <- evaluate(p=test, a=backg, model=mglm, x=envi.1k)
 
-# mlm <- glmer(formula=X~CAN+RNR+POP+(1|MAT), data=train@data)
-# plm <- predict(envi.1k, mlm, type='response')
-
 mgb <- gbm(formula=X~MAT+CAN+RNR+POP, data=train@data)
 pgb <- predict.gbm(newdata=data.frame(values(envi.1k)), object=mgb, type='response', n.trees=100)
 pgbr <- envi.1k$MAT; values(pgbr) <- pgb
 pgbr <- mask(pgbr, borders)
 evaluate(p=test, a=backg, model=mgb, x=envi.1k, n.trees=100)
+
+# mlm <- glmer(formula=X~CAN+RNR+POP+(1|MAT), data=train@data)
+# plm <- predict(envi.1k, mlm, type='response')
