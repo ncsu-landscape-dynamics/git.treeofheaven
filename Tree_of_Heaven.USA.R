@@ -21,12 +21,20 @@ toh.EDD <- toh.EDD[which(toh.EDD$OccStatus=="Positive"), c('Longitude', 'Latitud
 toh.xy <- SpatialPoints(unique(rbind(toh.BIEN, toh.EDD)), proj4string = CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0 '))
 toh.xy <- crop(toh.xy, usa)
 
+rails <- readOGR('C:\\Users\\bjselige\\Downloads\\Rails_Roads-20200117T195917Z-001\\Rails_Roads\\tl_2015_us_rails.shp')
+rails <- as(rails, 'SpatialLines')
+rails <- crop(rails, bbox)
+rails <- gLineMerge(rails)
+
+toh.ra <- gDistance(spTransform(toh.xy, crs(rails)), rails, byid=T)
+
+
 biodir <- 'H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\worldclim1k\\US\\'
 biovars <- stack(lapply(X=list.files(biodir), FUN=function(X){raster(paste(biodir, X, sep=''))}))
-rails.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\rails.distance.1km.tif')
-rails.d <- resample(rails.d, biovars[[1]], method='bilinear'); rails.d <- rails.d + .5
-roads.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\roads.distance.tif')
-roads.d <- resample(roads.d, biovars[[1]], method='bilinear')
+# rails.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\rails.distance.1km.tif')
+# rails.d <- resample(rails.d, biovars[[1]], method='bilinear'); rails.d <- rails.d + .5
+# roads.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\roads.distance.tif')
+# roads.d <- resample(roads.d, biovars[[1]], method='bilinear')
 
 #### Split data into testing and training sets ####
 k <- 5; set.seed(1991); folds <- kfold(toh.xy, k=k)
@@ -42,7 +50,6 @@ pm.top3.ro <- predict(m.top3.ro, x=stack(biovars[[1]], biovars[[14]], biovars[[1
 #### Evaluation ####
 slf <- raster('H:\\Shared drives\\APHIS  Projects\\PoPS\\Case Studies\\spotted_latternfly\\slf_data_redone_with_all_data_sources\\slf2019_infested.tif')
 slf <- projectRaster(slf, crs=CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0 '))
-
 slf.hist <- hist(pm.top3.ro[slf$slf2019_infested>0])
 per.out <- sum(pm.top3.ro[slf$slf2019_infested>0]<.2, na.rm=T)/sum(pm.top3.ro[slf$slf2019_infested>0]>0, na.rm=T)
 
