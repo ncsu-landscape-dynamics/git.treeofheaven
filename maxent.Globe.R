@@ -5,18 +5,13 @@ require(kuenm)
 require(dismo)
 require(rgbif)
 
-#wrld <- readOGR('H:\\Shared drives\\Data\\Vector\\Global\\TM_world_borders.gpkg')
 wrld <- readOGR('C:\\Users\\bjselige\\Documents\\TM_world_borders.gpkg')
 
 #### Gather data ####
-# aa.gbif <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.GBIF.csv')[, c(2,3)]; names(aa.gbif) <- c('Longitude', 'Latitude')
-# aa.bien <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.BIEN.csv')[, c('Longitude', 'Latitude')]
-aa.gbif <- read.csv('C:\\Users\\bjselige\\Documents\\Ailanthus.GBIF.csv')[, c(2,3)]; names(aa.gbif) <- c('Longitude', 'Latitude')
-aa.bien <- read.csv('C:\\Users\\bjselige\\Documents\\Ailanthus.BIEN.csv')[, c('Longitude', 'Latitude')]
-
+aa.gbif <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.GBIF.csv')[, c(2,3)]; names(aa.gbif) <- c('Longitude', 'Latitude')
+aa.bien <- read.csv('H:\\Shared drives\\Data\\Table\\Global\\Ailanthus.BIEN.csv')[, c('Longitude', 'Latitude')]
 pts <- SpatialPoints(coords = unique(rbind(aa.gbif, aa.bien)))
-d <- getData('worldclim', download=T, var='bio', res=10)
-e <- d; d <- stack(d[[1]], d[[11]], d[[12]], d[[19]])
+d <- raster::getData('worldclim', download=T, var='bio', res=5) #e <- stack(d[[1]], d[[11]], d[[12]], d[[19]])
 
 #### Split data into testing and training sets ####
 k <- 5; set.seed(1991)
@@ -26,10 +21,27 @@ train <- pts[which(folds==k)]
 backg <- spsample(wrld, n=length(test), type='regular')
 
 #### Model and Predict ####
-m <- maxent(p=train, x=d); m2 <- maxent(p=pts, x=e)
+m <- maxent(p=pts, x=d) #m2 <- maxent(p=pts, x=e)
 p <- predict(m, x=d) #p2 <- predict(m2, x=e)
 e <- evaluate(p=test, a=backg, model=m, x=d)
-p.tr <- p > 0.4804556
+p.tr <- p>.472 
+
+# ##### Model at 10 resolution
+# d <- getData('worldclim', download=T, var='bio', res=10)
+# e <- d; d <- stack(d[[1]], d[[11]], d[[12]], d[[19]])
+# 
+# #### Split data into testing and training sets ####
+# k <- 5; set.seed(1991)
+# folds <- kfold(pts, k)
+# test <- pts[which(folds!=k)]
+# train <- pts[which(folds==k)]
+# backg <- spsample(wrld, n=length(test), type='regular')
+# 
+# #### Model and Predict ####
+# m <- maxent(p=train, x=d); m2 <- maxent(p=pts, x=e)
+# p <- predict(m, x=d) #p2 <- predict(m2, x=e)
+# e <- evaluate(p=test, a=backg, model=m, x=d)
+# p.tr <- p > 0.4804556
 
 #### Map results ####
 rpts <- rasterToPoints(p)
