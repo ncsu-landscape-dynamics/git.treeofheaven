@@ -21,20 +21,12 @@ toh.EDD <- toh.EDD[which(toh.EDD$OccStatus=="Positive"), c('Longitude', 'Latitud
 toh.xy <- SpatialPoints(unique(rbind(toh.BIEN, toh.EDD)), proj4string = CRS('+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0 '))
 toh.xy <- crop(toh.xy, usa)
 
-rails <- readOGR('C:\\Users\\bjselige\\Downloads\\Rails_Roads-20200117T195917Z-001\\Rails_Roads\\tl_2015_us_rails.shp')
-rails <- as(rails, 'SpatialLines')
-rails <- crop(rails, bbox)
-rails <- gLineMerge(rails)
-
-toh.ra <- gDistance(spTransform(toh.xy, crs(rails)), rails, byid=T)
-
-
 biodir <- 'H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\worldclim1k\\US\\'
 biovars <- stack(lapply(X=list.files(biodir), FUN=function(X){raster(paste(biodir, X, sep=''))}))
-# rails.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\rails.distance.1km.tif')
-# rails.d <- resample(rails.d, biovars[[1]], method='bilinear'); rails.d <- rails.d + .5
-# roads.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\roads.distance.tif')
-# roads.d <- resample(roads.d, biovars[[1]], method='bilinear')
+rails.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\rails.distance.1km.tif')
+rails.d <- resample(rails.d, biovars[[1]], method='bilinear'); rails.d <- rails.d + .5
+roads.d <- raster('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\Products_generated_from_Rails_Roads\\roads.distance.tif')
+roads.d <- resample(roads.d, biovars[[1]], method='bilinear')
 
 #### Split data into testing and training sets ####
 k <- 5; set.seed(1991); folds <- kfold(toh.xy, k=k)
@@ -60,6 +52,17 @@ final.out <- rescale(final.out)
 final.out <- final.out*100
 # writeRaster(final.out, 'C:\\Users\\bjselige\\Desktop\\toh.USA.tif', overwrite=T)
 # toh.usa <- raster('C:\\Users\\bjselige\\Desktop\\toh.USA.tif'); toh.usa <- aggregate(toh.usa, 4)
+
+
+# rails <- readOGR('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\tl_2015_us_rails.shp') #Shared
+# rails <- readOGR('C:\\Users\\bjselige\\Downloads\\Rails_Roads-20200117T195917Z-001\\Rails_Roads\\tl_2015_us_rails.shp') #Local
+# rails <- as(rails, 'SpatialLines'); rails <- crop(rails, bbox); rails <- gLineMerge(rails)
+# rails.xy <- gDistance(spTransform(toh.xy, crs(rails)), rails, byid=T)
+# roads <- readOGR('H:\\Shared drives\\APHIS  Projects\\shared resources\\data\\Rails_Roads\\tl_2015_us_primaryroads.shp') #Shared
+# roads <- readOGR('C:\\Users\\bjselige\\Downloads\\tl_2015_us_primaryroads-20201007T181037Z-001\\tl_2015_us_primaryroads\\tl_2015_us_primaryroads.shp') #Local
+# roads <- as(roads, 'SpatialLines'); roads <- crop(roads, bbox); roads <- gLineMerge(roads)
+# roads.xy <- gDistance(spTransform(toh.xy, crs(roads)), roads, byid=T)
+
 
 #### This block of code includes models which were tried but abandoned ####
 # m.rora <- maxent(p=train, x=stack(roads.d, rails.d))

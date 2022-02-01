@@ -72,10 +72,11 @@ backg <- spsample(borders, type='regular', n=length(test))
 ##### Model #####
 m1.gam <- gam(formula=X~MAT+CAN+RNR+POP, data=train@data)
 p1.gam <- predict(envi.1k, m1.gam, type='response')
+eglm <- evaluate(p=test, a=backg, model=m1.gam, x=envi.1k)
 
 p1.gam2 <- prediction(predictions=extract(p1.gam, toh.pts)[!is.na(extract(p1.gam, toh.pts))],
                       labels=as.numeric(toh.pts$X>0)[!is.na(extract(p1.gam, toh.pts))])
-e1.gam <- performance(p1.gam2, "auc")
+e1.gam <- performance(p1.gam, "auc")
 
 m1.rf <- randomForest(formula=X~MAT+CAN+RNR+POP, data=train, na.action = na.omit)
 p1.rf <- predict(envi.1k, m1.rf)
